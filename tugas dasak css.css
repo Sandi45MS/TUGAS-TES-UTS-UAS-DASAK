@@ -1,0 +1,35 @@
+/* ---- Global Background ---- */
+.stApp {
+    background-color: #f4f7ff;
+}
+
+/* ---- Title Styling ---- */
+h1, h2, h3 {
+    color: #1b3c88;
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* ---- Sidebar ---- */
+.css-1d391kg {
+    background-color: #e6ebff !important;
+}
+
+/* ---- Inputs ---- */
+input, select, textarea {
+    border-radius: 8px !important;
+    padding: 8px !important;
+}
+
+/* ---- Buttons ---- */
+.stButton>button {
+    background-color: #3056d3 !important;
+    color: white !important;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-weight: bold;
+    border: none;
+}
+
+.stButton>button:hover {
+    background-color: #1f3ea4 !important;
+}
