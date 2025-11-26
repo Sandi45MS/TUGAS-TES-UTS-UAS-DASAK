@@ -11,7 +11,7 @@ def load_css():
 load_css()
 
 
-st.set_page_config(page_title="Aplikasi Akuntansi Sederhana", layout="centered")
+st.set_page_config(page_title="Aplikasi Laporan Keuangan", layout="centered")
 
 st.title("📘 Aplikasi Akuntansi Sederhana (Input - Output)")
 st.write("Gunakan form berikut untuk memasukkan data akuntansi dasar.")
@@ -135,3 +135,4 @@ elif menu == "Lihat Semua Data":
 
     st.subheader("📙 Kredit / Hutang")
     st.table(st.session_state.kredit)
+
