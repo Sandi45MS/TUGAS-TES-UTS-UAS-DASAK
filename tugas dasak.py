@@ -12,13 +12,8 @@ def load_css():
 
 load_css()
 
-st.set_page_config(
-    page_title="Aplikasi Akuntansi Excel",
-    layout="centered"
-)
-
-st.title("📘 Aplikasi Akuntansi Terintegrasi Excel")
-st.caption("Upload • Edit • Tambah Transaksi • Download Excel")
+st.set_page_config("Aplikasi Akuntansi Excel", layout="centered")
+st.title("📘 Aplikasi Akuntansi Berbasis Excel")
 
 # ================= SESSION STATE =================
 if "df_excel" not in st.session_state:
@@ -29,7 +24,8 @@ menu = st.sidebar.selectbox(
     "Menu",
     [
         "📂 Upload Excel",
-        "✏️ Edit & Tambah Transaksi",
+        "✏️ Edit Data",
+        "➕ Tambah Transaksi",
         "⬇️ Download Excel"
     ]
 )
@@ -38,66 +34,77 @@ menu = st.sidebar.selectbox(
 if menu == "📂 Upload Excel":
     st.header("📂 Upload File Excel")
 
-    file = st.file_uploader(
-        "Upload file Excel (.xlsx)",
-        type=["xlsx"]
-    )
+    file = st.file_uploader("Upload Excel (.xlsx)", type=["xlsx"])
 
     if file:
         try:
-            # PENTING: header=0 → baris pertama jadi header
-            df = pd.read_excel(file, header=0)
+            # ⚠️ HEADER = NONE (INI KUNCI UTAMA)
+            df = pd.read_excel(file, header=None)
 
             st.session_state.df_excel = df
-            st.success("Excel berhasil dibaca")
+            st.success("Excel berhasil dibaca (struktur aman)")
 
-            st.subheader("Preview Data")
             st.dataframe(df)
 
         except Exception as e:
-            st.error("Gagal membaca file Excel")
-            st.code(str(e))
+            st.error(f"Gagal membaca Excel: {e}")
 
 # ================= EDIT DATA =================
-elif menu == "✏️ Edit & Tambah Transaksi":
-    st.header("✏️ Edit & Tambah Transaksi")
+elif menu == "✏️ Edit Data":
+    st.header("✏️ Edit Isi Excel")
 
     if st.session_state.df_excel is None:
-        st.warning("Silakan upload file Excel terlebih dahulu")
+        st.warning("Upload Excel terlebih dahulu")
     else:
-        st.info("Kolom akan tetap seperti Excel asli (A, B, C, dst tidak berubah)")
-
-        # INI KUNCI UTAMA AGAR KOLOM TIDAK RUSAK
-        edited_df = st.data_editor(
+        edited = st.data_editor(
             st.session_state.df_excel,
             num_rows="dynamic",
             use_container_width=True
         )
 
-        # Simpan kembali TANPA mengubah kolom
-        st.session_state.df_excel = edited_df
+        st.session_state.df_excel = edited
+        st.success("Perubahan tersimpan sementara")
 
-        st.success("Perubahan disimpan sementara")
+# ================= TAMBAH TRANSAKSI =================
+elif menu == "➕ Tambah Transaksi":
+    st.header("➕ Tambah Baris Transaksi")
+
+    if st.session_state.df_excel is None:
+        st.warning("Upload Excel terlebih dahulu")
+    else:
+        jumlah_kolom = st.session_state.df_excel.shape[1]
+
+        st.write("Isi sesuai urutan kolom Excel (A, B, C, dst)")
+
+        new_row = []
+        for i in range(jumlah_kolom):
+            val = st.text_input(f"Kolom {i+1}", key=f"col_{i}")
+            new_row.append(val)
+
+        if st.button("Tambah"):
+            st.session_state.df_excel.loc[len(st.session_state.df_excel)] = new_row
+            st.success("Transaksi ditambahkan")
 
 # ================= DOWNLOAD =================
 elif menu == "⬇️ Download Excel":
     st.header("⬇️ Download Excel")
 
     if st.session_state.df_excel is None:
-        st.warning("Belum ada data Excel")
+        st.warning("Tidak ada data")
     else:
         buffer = io.BytesIO()
 
         with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            # ⚠️ index=False, header=False (INI KUNCI KEDUA)
             st.session_state.df_excel.to_excel(
                 writer,
                 index=False,
-                sheet_name="Sheet1"  # Nama sheet default
+                header=False
             )
 
         st.download_button(
-            label="Download Excel",
-            data=buffer.getvalue(),
-            file_name="laporan_transaksi.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            "Download Excel",
+            buffer.getvalue(),
+            "hasil_akuntansi.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
