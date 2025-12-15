@@ -3,13 +3,7 @@ import pandas as pd
 import io
 from datetime import datetime
 
-# ---------------- CONFIG ----------------
-st.set_page_config(
-    page_title="Aplikasi Akuntansi Terintegrasi",
-    layout="centered"
-)
-
-# ---------------- LOAD CSS ----------------
+# ================= CSS LOADER =================
 def load_css():
     try:
         with open("style.css") as f:
@@ -19,142 +13,118 @@ def load_css():
 
 load_css()
 
-# ---------------- INIT STATE ----------------
-def init_df(cols):
-    return pd.DataFrame(columns=cols)
+st.set_page_config(
+    page_title="Aplikasi Akuntansi Excel",
+    layout="centered"
+)
 
+st.title("📊 Aplikasi Akuntansi Berbasis Excel")
+st.caption("Input • Edit • Download | Streamlit + GitHub")
+
+# ================= SESSION STATE =================
 if "data" not in st.session_state:
-    st.session_state.data = {
-        "jurnal": init_df(["tanggal", "keterangan", "debit", "kredit"]),
-        "laba_rugi": init_df(["tanggal", "pendapatan", "beban", "laba"]),
-        "neraca": init_df(["tanggal", "aset", "kewajiban", "ekuitas"]),
-        "kredit": init_df(["tanggal", "pemberi", "jumlah", "jatuh_tempo"])
-    }
+    st.session_state.data = pd.DataFrame(
+        columns=["BULAN", "TRANSAKSI", "KAS", "PIUTANG", "UTANG", "MODAL"]
+    )
 
-# ---------------- TITLE ----------------
-st.title("📘 Aplikasi Akuntansi Terintegrasi")
-st.write("Input • Edit • Import • Export Excel")
-
-# ---------------- SIDEBAR ----------------
+# ================= SIDEBAR MENU =================
 menu = st.sidebar.selectbox(
-    "Menu Utama",
+    "Menu",
     [
-        "📒 Jurnal Umum",
-        "📗 Laba Rugi",
-        "📘 Neraca",
-        "📙 Kredit / Hutang",
-        "📂 Import Excel",
-        "✏️ Edit Data",
-        "⬇️ Export Excel"
+        "📂 Buka File Excel",
+        "➕ Tambah Transaksi",
+        "✏️ Edit Data Excel",
+        "⬇️ Download Excel"
     ]
 )
 
-# ---------------- JURNAL ----------------
-if menu == "📒 Jurnal Umum":
-    st.subheader("Input Jurnal Umum")
+# ================= MENU 1 : UPLOAD EXCEL =================
+if menu == "📂 Buka File Excel":
+    st.header("📂 Upload File Excel")
 
-    tgl = st.date_input("Tanggal", datetime.now())
-    ket = st.text_input("Keterangan")
-    d = st.number_input("Debit", 0.0)
-    k = st.number_input("Kredit", 0.0)
+    file = st.file_uploader(
+        "Upload file Excel dengan format:",
+        type=["xlsx"]
+    )
 
-    if st.button("Simpan"):
-        st.session_state.data["jurnal"].loc[len(st.session_state.data["jurnal"])] = [
-            str(tgl), ket, d, k
-        ]
-
-    st.dataframe(st.session_state.data["jurnal"])
-
-# ---------------- LABA RUGI ----------------
-elif menu == "📗 Laba Rugi":
-    st.subheader("Laporan Laba Rugi")
-
-    tgl = st.date_input("Tanggal", datetime.now())
-    p = st.number_input("Pendapatan", 0.0)
-    b = st.number_input("Beban", 0.0)
-
-    if st.button("Hitung & Simpan"):
-        st.session_state.data["laba_rugi"].loc[
-            len(st.session_state.data["laba_rugi"])
-        ] = [str(tgl), p, b, p - b]
-
-    st.dataframe(st.session_state.data["laba_rugi"])
-
-# ---------------- NERACA ----------------
-elif menu == "📘 Neraca":
-    st.subheader("Neraca")
-
-    tgl = st.date_input("Tanggal", datetime.now())
-    a = st.number_input("Aset", 0.0)
-    kw = st.number_input("Kewajiban", 0.0)
-    e = st.number_input("Ekuitas", 0.0)
-
-    if st.button("Simpan"):
-        st.session_state.data["neraca"].loc[
-            len(st.session_state.data["neraca"])
-        ] = [str(tgl), a, kw, e]
-
-    st.dataframe(st.session_state.data["neraca"])
-
-# ---------------- KREDIT ----------------
-elif menu == "📙 Kredit / Hutang":
-    st.subheader("Kredit / Hutang")
-
-    tgl = st.date_input("Tanggal", datetime.now())
-    p = st.text_input("Pemberi Kredit")
-    j = st.number_input("Jumlah", 0.0)
-    jt = st.date_input("Jatuh Tempo")
-
-    if st.button("Simpan"):
-        st.session_state.data["kredit"].loc[
-            len(st.session_state.data["kredit"])
-        ] = [str(tgl), p, j, str(jt)]
-
-    st.dataframe(st.session_state.data["kredit"])
-
-# ---------------- IMPORT EXCEL ----------------
-elif menu == "📂 Import Excel":
-    st.subheader("Import File Excel")
-
-    file = st.file_uploader("Upload Excel", type=["xlsx"])
+    st.info("Header wajib: BULAN, TRANSAKSI, KAS, PIUTANG, UTANG, MODAL")
 
     if file:
         try:
-            st.session_state.data["jurnal"] = pd.read_excel(file, "Jurnal")
-            st.session_state.data["laba_rugi"] = pd.read_excel(file, "LabaRugi")
-            st.session_state.data["neraca"] = pd.read_excel(file, "Neraca")
-            st.session_state.data["kredit"] = pd.read_excel(file, "Kredit")
-            st.success("Excel berhasil dimuat")
+            df = pd.read_excel(file)
+            df.columns = df.columns.str.upper()
+            st.session_state.data = df
+            st.success("Excel berhasil dibaca")
+            st.dataframe(df)
         except:
-            st.error("Format sheet tidak sesuai")
+            st.error("Format Excel tidak sesuai")
 
-# ---------------- EDIT DATA ----------------
-elif menu == "✏️ Edit Data":
-    sheet = st.selectbox(
-        "Pilih Data",
-        ["jurnal", "laba_rugi", "neraca", "kredit"]
-    )
+# ================= MENU 2 : TAMBAH TRANSAKSI =================
+elif menu == "➕ Tambah Transaksi":
+    st.header("➕ Tambah Transaksi Baru")
 
-    st.session_state.data[sheet] = st.data_editor(
-        st.session_state.data[sheet],
-        num_rows="dynamic"
-    )
+    with st.form("form_transaksi"):
+        bulan = st.number_input("Bulan", min_value=1, max_value=12, step=1)
+        transaksi = st.text_input("Nama Transaksi")
 
-# ---------------- EXPORT EXCEL ----------------
-elif menu == "⬇️ Export Excel":
-    st.subheader("Download Excel")
+        kas = st.number_input("Kas", step=1000.0)
+        piutang = st.number_input("Piutang", step=1000.0)
+        utang = st.number_input("Utang", step=1000.0)
+        modal = st.number_input("Modal", step=1000.0)
 
-    buffer = io.BytesIO()
+        submit = st.form_submit_button("Simpan Transaksi")
 
-    with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
-        st.session_state.data["jurnal"].to_excel(writer, "Jurnal", index=False)
-        st.session_state.data["laba_rugi"].to_excel(writer, "LabaRugi", index=False)
-        st.session_state.data["neraca"].to_excel(writer, "Neraca", index=False)
-        st.session_state.data["kredit"].to_excel(writer, "Kredit", index=False)
+    if submit:
+        new_row = {
+            "BULAN": bulan,
+            "TRANSAKSI": transaksi,
+            "KAS": kas,
+            "PIUTANG": piutang,
+            "UTANG": utang,
+            "MODAL": modal
+        }
 
-    st.download_button(
-        "Download File Excel",
-        buffer.getvalue(),
-        "laporan_akuntansi.xlsx",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        st.session_state.data = pd.concat(
+            [st.session_state.data, pd.DataFrame([new_row])],
+            ignore_index=True
+        )
+
+        st.success("Transaksi berhasil ditambahkan")
+        st.dataframe(st.session_state.data)
+
+# ================= MENU 3 : EDIT DATA =================
+elif menu == "✏️ Edit Data Excel":
+    st.header("✏️ Edit Data Excel")
+
+    if st.session_state.data.empty:
+        st.warning("Data masih kosong")
+    else:
+        edited_df = st.data_editor(
+            st.session_state.data,
+            num_rows="dynamic",
+            use_container_width=True
+        )
+        st.session_state.data = edited_df
+        st.success("Perubahan disimpan (sementara)")
+
+# ================= MENU 4 : DOWNLOAD =================
+elif menu == "⬇️ Download Excel":
+    st.header("⬇️ Download Excel")
+
+    if st.session_state.data.empty:
+        st.warning("Tidak ada data untuk di-download")
+    else:
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            st.session_state.data.to_excel(
+                writer,
+                index=False,
+                sheet_name="DATA_AKUNTANSI"
+            )
+
+        st.download_button(
+            label="Download Excel",
+            data=buffer.getvalue(),
+            file_name="laporan_akuntansi.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
