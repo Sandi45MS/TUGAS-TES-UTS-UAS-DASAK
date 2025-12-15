@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 import io
-from datetime import datetime
 
-# ---------------- LOAD CSS ----------------
+# ================= CSS =================
 def load_css():
     try:
         with open("style.css") as f:
@@ -13,27 +12,25 @@ def load_css():
 
 load_css()
 
-st.set_page_config(page_title="Aplikasi Akuntansi Excel", layout="centered")
+st.set_page_config("Aplikasi Akuntansi Excel", layout="centered")
+st.title("📘 Aplikasi Akuntansi Terhubung Excel")
 
-st.title("📘 Aplikasi Akuntansi Terintegrasi Excel")
-st.write("Upload, edit, dan buat file Excel transaksi secara langsung.")
+# ================= SESSION =================
+if "df" not in st.session_state:
+    st.session_state.df = pd.DataFrame()
 
-# ---------------- SESSION STATE ----------------
-if "data_excel" not in st.session_state:
-    st.session_state.data_excel = pd.DataFrame()
-
-# ---------------- SIDEBAR MENU ----------------
+# ================= MENU =================
 menu = st.sidebar.selectbox(
-    "Menu Utama",
+    "Menu",
     [
         "📂 Upload Excel",
-        "✏️ Edit Data Excel",
-        "➕ Input Manual",
+        "✏️ Edit Data",
+        "➕ Tambah Transaksi",
         "⬇️ Download Excel"
     ]
 )
 
-# ---------------- UPLOAD EXCEL ----------------
+# ================= UPLOAD =================
 if menu == "📂 Upload Excel":
     st.header("📂 Upload File Excel")
 
@@ -41,86 +38,59 @@ if menu == "📂 Upload Excel":
 
     if file:
         try:
-            df = pd.read_excel(file)
-            if df.empty:
-                st.warning("File Excel kosong.")
-            else:
-                st.session_state.data_excel = df
-                st.success("Excel berhasil dibaca.")
-                st.dataframe(df)
-
+            df = pd.read_excel(file)  # kolom pertama otomatis jadi header
+            st.session_state.df = df
+            st.success("Excel berhasil dibaca")
+            st.dataframe(df)
         except Exception as e:
-            st.error("Gagal membaca file Excel.")
-            st.code(str(e))
+            st.error(f"Gagal membaca Excel: {e}")
 
-# ---------------- EDIT DATA ----------------
-elif menu == "✏️ Edit Data Excel":
+# ================= EDIT =================
+elif menu == "✏️ Edit Data":
     st.header("✏️ Edit Data Excel")
 
-    if st.session_state.data_excel.empty:
-        st.warning("Belum ada data Excel.")
+    if st.session_state.df.empty:
+        st.warning("Belum ada data Excel")
     else:
-        edited_df = st.data_editor(
-            st.session_state.data_excel,
+        edited = st.data_editor(
+            st.session_state.df,
             num_rows="dynamic",
             use_container_width=True
         )
-        st.session_state.data_excel = edited_df
-        st.success("Perubahan disimpan sementara.")
+        st.session_state.df = edited
+        st.success("Perubahan tersimpan (sementara)")
 
-# ---------------- INPUT MANUAL ----------------
-elif menu == "➕ Input Manual":
+# ================= TAMBAH =================
+elif menu == "➕ Tambah Transaksi":
     st.header("➕ Tambah Transaksi Baru")
 
-    if st.session_state.data_excel.empty:
-        st.info("Belum ada tabel. Kolom akan dibuat otomatis.")
-
-        nama_transaksi = st.text_input("Nama Transaksi (Kolom Pertama)")
-        jumlah = st.number_input("Jumlah", step=1000.0)
-        bulan = st.text_input("Bulan")
-
-        if st.button("Buat Tabel & Simpan"):
-            st.session_state.data_excel = pd.DataFrame([{
-                "Transaksi": nama_transaksi,
-                "Jumlah": jumlah,
-                "Bulan": bulan
-            }])
-            st.success("Tabel baru dibuat.")
-
+    if st.session_state.df.empty:
+        st.warning("Upload Excel terlebih dahulu")
     else:
-        columns = st.session_state.data_excel.columns.tolist()
+        data_baru = {}
+        for col in st.session_state.df.columns:
+            data_baru[col] = st.text_input(f"Isi {col}")
 
-        input_data = {}
-        for col in columns:
-            input_data[col] = st.text_input(f"{col}")
-
-        if st.button("Tambah Baris"):
-            st.session_state.data_excel = pd.concat(
-                [
-                    st.session_state.data_excel,
-                    pd.DataFrame([input_data])
-                ],
+        if st.button("Tambah"):
+            st.session_state.df = pd.concat(
+                [st.session_state.df, pd.DataFrame([data_baru])],
                 ignore_index=True
             )
-            st.success("Transaksi ditambahkan.")
+            st.success("Transaksi ditambahkan")
 
-# ---------------- DOWNLOAD EXCEL ----------------
+# ================= DOWNLOAD =================
 elif menu == "⬇️ Download Excel":
-    st.header("⬇️ Download File Excel")
+    st.header("⬇️ Download Excel")
 
-    if st.session_state.data_excel.empty:
-        st.warning("Tidak ada data untuk didownload.")
+    if st.session_state.df.empty:
+        st.warning("Tidak ada data")
     else:
         buffer = io.BytesIO()
-        st.session_state.data_excel.to_excel(
-            buffer,
-            index=False,
-            engine="openpyxl"
-        )
+        st.session_state.df.to_excel(buffer, index=False)
 
         st.download_button(
             "Download Excel",
-            data=buffer.getvalue(),
-            file_name=f"transaksi_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+            buffer.getvalue(),
+            "hasil_transaksi.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
