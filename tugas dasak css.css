@@ -39,3 +39,19 @@ h1, h2, h3 {
     font-weight: bold;
 }
 
+/* ---- Table Editor ---- */
+[data-testid="stDataFrame"] {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* ---- Info Box ---- */
+.stAlert {
+    border-radius: 10px;
+}
+
+/* ---- Sidebar ---- */
+section[data-testid="stSidebar"] {
+    background-color: #e6ebff;
+}
