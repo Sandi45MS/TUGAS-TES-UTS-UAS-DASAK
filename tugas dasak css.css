@@ -1,32 +1,23 @@
-/* Global Background */
 .stApp {
     background-color: #f4f7ff;
 }
 
-/* Titles */
 h1, h2, h3 {
     color: #1b3c88;
     font-family: "Segoe UI", sans-serif;
 }
 
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #e6ebff;
-}
-
-/* Buttons */
 .stButton>button {
-    background-color: #3056d3;
-    color: white;
+    background-color: #3056d3 !important;
+    color: white !important;
     border-radius: 10px;
     font-weight: bold;
 }
 
 .stButton>button:hover {
-    background-color: #1f3ea4;
+    background-color: #1f3ea4 !important;
 }
 
-/* Data editor */
-[data-testid="stDataEditor"] {
-    border-radius: 10px;
+input, textarea {
+    border-radius: 8px !important;
 }
