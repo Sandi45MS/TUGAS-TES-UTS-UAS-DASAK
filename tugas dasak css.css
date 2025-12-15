@@ -21,3 +21,21 @@ h1, h2, h3 {
 input, textarea {
     border-radius: 8px !important;
 }
+
+.stApp {
+    background-color: #f4f7ff;
+}
+
+h1, h2, h3 {
+    color: #1b3c88;
+    font-family: "Segoe UI", sans-serif;
+}
+
+.stButton>button {
+    background-color: #3056d3 !important;
+    color: white !important;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-weight: bold;
+}
+
