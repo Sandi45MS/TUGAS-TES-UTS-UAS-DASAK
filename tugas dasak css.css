@@ -1,40 +1,32 @@
-/* ---- Global Background ---- */
+/* Global Background */
 .stApp {
     background-color: #f4f7ff;
 }
 
-/* ---- Title Styling ---- */
+/* Titles */
 h1, h2, h3 {
     color: #1b3c88;
     font-family: "Segoe UI", sans-serif;
 }
 
-/* ---- Sidebar ---- */
+/* Sidebar */
 section[data-testid="stSidebar"] {
-    background-color: #e6ebff !important;
+    background-color: #e6ebff;
 }
 
-/* ---- Inputs ---- */
-input, select, textarea {
-    border-radius: 8px !important;
-    padding: 8px !important;
-}
-
-/* ---- Buttons ---- */
+/* Buttons */
 .stButton>button {
-    background-color: #3056d3 !important;
-    color: white !important;
+    background-color: #3056d3;
+    color: white;
     border-radius: 10px;
-    padding: 8px 16px;
     font-weight: bold;
-    border: none;
 }
 
 .stButton>button:hover {
-    background-color: #1f3ea4 !important;
+    background-color: #1f3ea4;
 }
 
-/* ---- Table ---- */
-.dataframe {
+/* Data editor */
+[data-testid="stDataEditor"] {
     border-radius: 10px;
 }
